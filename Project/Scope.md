@@ -16,9 +16,10 @@ violation records, and appeals into one system with role-based access, a defined
 appeal review workflow, and status tracking visible to the applicant.
 
 **2. Target Users**
-**Applicants**: (students, staff, visitors) Apply for and renew permits, view their violations, file appeals, and track the status of each request.
+**Permit holders**: (students, staff, visitors, including applicants before a permit is issued) Apply for and renew permits, view their violations, file appeals, and track the status of each request.
 **Parking officers / campus security**: Record violations against a vehicle and permit, and attach supporting evidence.
-**Administrators**: Set permit quotas and eligibility rules, approve or reject permit applications, review appeals, record decisions, and generate reports.
+**Administrators**: Set permit quotas and eligibility rules, approve or reject permit applications, void violations, and generate reports.
+**Appeals officers**: Review appeals with their evidence and record a decision (approve, reduce or reject) with a written justification.
 The development team is a stakeholder in the project but is not a user of the delivered system.
 
 **3. In-Scope Features**

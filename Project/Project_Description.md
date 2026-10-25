@@ -7,10 +7,11 @@ submission to final decision. ParkAppeal replaces this with a single system for
 issuing permits and managing appeals.
 
 ## Intended Users
-- **Applicants** (students, staff, and visitors) who apply for parking permits
+- **Permit holders** (students, staff, and visitors) who apply for parking permits
   and contest violations.
 - **Parking officers** who issue violations and review evidence.
-- **Administrators** who set permit quotas, review appeals, and issue decisions.
+- **Administrators** who set permit quotas and eligibility rules and decide permit applications.
+- **Appeals officers** who review appeals and issue decisions.
 
 ## Main Features
 - Online permit application with document upload and eligibility checking.

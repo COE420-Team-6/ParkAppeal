@@ -37,7 +37,7 @@
 | NFR ID | Category | Non-Functional Requirement | Contributor |
 | --- | --- | --- | --- |
 | NFR-01 | Performance | The appeal submission form should load within 3 seconds for 95% of users at 200 concurrent users. | Mohamad Al Kadi |
-| NFR-02 | Security | The system should restrict appeal review and decision actions to authenticated appeals officers and appeals committee members, and log every decision with a timestamp and user ID. | Mohamad Al Kadi |
+| NFR-02 | Security | The system should restrict appeal review and decision actions to authenticated appeals officers, and log every decision with a timestamp and user ID. | Mohamad Al Kadi |
 | NFR-03 | Reliability | The system should retain a submitted appeal and its attachments even after a server restart, maintaining at least 99.5% uptime per month. | Mohamad Al Kadi |
 | NFR-04 | Usability | The system should retain a submitted appeal and its attachments even after a server restart, maintaining at least 99.5% uptime per month. | Mohamad Al Kadi |
 | NFR-05 | Scalability | The appeals queue should support at least 1,000 pending appeals and 50 concurrent officer reviews without dashboard load times exceeding 2 seconds. | Mohamad Al Kadi |

@@ -6,5 +6,5 @@ Mehlam Muniwala, b00104714, Computer Science, b00104714-sudo
 
 Jad Zeidan, b00088013, Computer Science, JadZeidan13
 
-Seyed Moshtagh Moulaei, Computer Science, SeyedMoshtagh
+Seyed Moshtagh Moulaei, b00106497, Computer Science, SeyedMoshtagh
 

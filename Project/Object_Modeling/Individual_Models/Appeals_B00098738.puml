@@ -1,0 +1,144 @@
+@startuml
+title ParkAppeal - Class Diagram (Appeals)
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundCorner 16
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam classAttributeIconSize 0
+skinparam ClassBackgroundColor #B6B5EF
+skinparam ClassBorderColor #111111
+skinparam ClassBorderThickness 1.6
+skinparam ClassFontColor #111111
+skinparam ClassFontSize 13
+skinparam StereotypeFontColor #111111
+skinparam ArrowColor #111111
+skinparam ArrowThickness 1.3
+skinparam NoteBackgroundColor #FFFFFF
+skinparam NoteBorderColor #111111
+skinparam NoteFontSize 11
+skinparam TitleFontColor #23395B
+skinparam TitleFontSize 22
+skinparam TitleFontStyle plain
+skinparam LegendBackgroundColor #FFFFFF
+skinparam LegendBorderColor #111111
+skinparam PackageBackgroundColor #FAFAFA
+skinparam PackageBorderColor #555555
+skinparam PackageFontSize 14
+skinparam PackageFontStyle plain
+skinparam nodesep 40
+skinparam ranksep 55
+hide empty members
+hide circle
+
+abstract class User <<D1>> #ED9EED {
+  - userId : String
+  - name : String
+  - email : String
+  - passwordHash : String
+  + authenticate(password : String) : boolean
+}
+class PermitHolder <<D1>> #ED9EED {
+  - vehiclePlates : List<String>
+  + submitAppeal(violationId : String,
+  {method}    reason : String,
+  {method}    files : List<Evidence>) : Appeal
+  + uploadEvidence(appealId : String,
+  {method}    file : Evidence) : void
+  + viewAppealStatus(appealId : String) : AppealStatus
+}
+class AppealsOfficer <<D1>> #ED9EED {
+  - employeeId : String
+  + reviewAppeal(appealId : String) : Appeal
+  + recordDecision(appealId : String,
+  {method}    outcome : DecisionOutcome,
+  {method}    justification : String) : Decision
+}
+
+class Appeal <<D4>> {
+  - appealId : String
+  - violationId : String
+  - reason : String
+  - submittedAt : Date
+  - status : AppealStatus
+  + addEvidence(evidence : Evidence) : void
+  + setDecision(decision : Decision) : void
+  + updateStatus(newStatus : AppealStatus) : void
+  + getStatus() : AppealStatus
+}
+class Evidence <<D4>> {
+  - evidenceId : String
+  - fileName : String
+  - fileType : String
+  - fileSizeBytes : long
+  - uploadedAt : Date
+  + isValid() : boolean
+}
+class Decision <<D4>> {
+  - decisionId : String
+  - outcome : DecisionOutcome
+  - justification : String
+  - adjustedFine : double
+  - decidedAt : Date
+  + isJustificationValid() : boolean
+}
+class AppealService <<Process 3.0>> {
+  - {static} APPEAL_WINDOW_DAYS : int = 14
+  - {static} MAX_ATTACHMENTS : int = 3
+  - {static} MAX_FILE_SIZE_MB : int = 5
+  + submitAppeal(holderId : String,
+  {method}    violationId : String,
+  {method}    reason : String,
+  {method}    files : List<Evidence>) : Appeal
+  + verifyViolationRecord(violationId : String) : boolean
+  + isWithinWindow(violationId : String) : boolean
+  + attachEvidence(appealId : String,
+  {method}    file : Evidence) : void
+  + recordDecision(appealId : String,
+  {method}    officerId : String,
+  {method}    outcome : DecisionOutcome,
+  {method}    justification : String) : Decision
+  + getAppealsByHolder(holderId : String) : List<Appeal>
+}
+
+class NotificationService <<Process 5.0>> #FFFFFF {
+  + sendSubmissionConfirmation(appeal : Appeal) : void
+  + notifyAppealStatusChange(appeal : Appeal) : void
+}
+enum AppealStatus #FFFFFF {
+  SUBMITTED
+  UNDER_REVIEW
+  DECIDED
+}
+enum DecisionOutcome #FFFFFF {
+  APPROVED
+  REDUCED
+  REJECTED
+}
+
+User <|-- AppealsOfficer
+User <|-- PermitHolder
+
+PermitHolder "1" -down- "0..*" Appeal : <back:#C5C5C5> files > </back>
+AppealsOfficer "0..1" -- "0..*" Appeal : <back:#C5C5C5> reviews > </back>
+AppealsOfficer "1" -down- "0..*" Decision : <back:#C5C5C5> records > </back>
+Appeal "1" *-left- "0..1" Decision : <back:#C5C5C5> resolved by > </back>
+Appeal "1" *-down- "0..3" Evidence : <back:#C5C5C5> supported by > </back>
+
+AppealService .left.> Appeal : <back:#C5C5C5> creates / updates </back>
+AppealService .up.> NotificationService : <back:#C5C5C5> Appeal Status Change </back>
+Appeal ..> AppealStatus
+Decision .down.> DecisionOutcome
+
+PermitHolder -[hidden]right- AppealService
+AppealsOfficer -[hidden]right- PermitHolder
+
+legend bottom left
+  <back:#ED9EED>   </back> Actor (DFD external entity)
+  <back:#B6B5EF>   </back> Appeals class (Process 3.0, D4)
+  <back:#FFFFFF>   </back> Reference class or enum
+  D1 User and Vehicle Registry, D4 Appeal Records
+  Contributor: B00098738
+end legend
+@enduml

@@ -40,12 +40,12 @@
 | UC-02 | Upload Evidence | Permit Holder | Attaches photos or documents to support an appeal. | Mohamad Al Kadi |
 | UC-03 | Track Appeal | Permit Holder | Views the current status and final decision of their appeals. | Mohamad Al Kadi |
 | UC-04 | Review Appeal | Appeals Officer | Reviews the citation and evidence, then approves, reduces, or rejects the appeal with a justification. | Mohamad Al Kadi |
-| UC-05 | Escalate Appeal | Appeals Committee | Reviews an appeal referred by the officer and records the final decision. | Mohamad Al Kadi |
-| UC-06 | Apply for Permit | Applicant | The applicant completes and submits a parking permit application through the ParkAppeal system. | Mehlam Muniwala |
+| UC-05 | Verify Violation Record | Permit Holder | When an appeal is submitted, the system checks that it matches an existing, non-voided violation record before accepting it. | Mohamad Al Kadi |
+| UC-06 | Apply for Permit | Permit Holder | The permit holder completes and submits a parking permit application through the ParkAppeal system. | Mehlam Muniwala |
 | UC-07 | Manage Permit Application | Administrator | The administrator reviews a permit application and approves or rejects it based on the provided information. | Mehlam Muniwala |
-| UC-08 | Renew Parking Permit | Applicant | The applicant renews an existing parking permit before it expires. | Mehlam Muniwala |
+| UC-08 | Renew Parking Permit | Permit Holder | The permit holder renews an existing parking permit before it expires. | Mehlam Muniwala |
 | UC-09 | Search Records | Administrator | The administrator searches and filters permits, violations, or appeals using status or date. | Mehlam Muniwala |
-| UC-10 | Receive Status Notification | Applicant | The applicant receives a notification when the status of a permit application or appeal changes. | Mehlam Muniwala |
+| UC-10 | Receive Status Notification | Permit Holder | The permit holder receives a notification when the status of a permit application or appeal changes. | Mehlam Muniwala |
 | UC-11 | Look Up Vehicle by Plate | Parking Officer | The officer enters a licence plate during patrol and the system returns the registered vehicle, any linked permit, and that permit's validity status. | Jad Zeidan |
 | UC-12 | Record Violation | Parking Officer | The officer issues a violation against a vehicle, selecting the violation type and entering the location. The system stores the record with an issue timestamp. | Jad Zeidan |
 | UC-13 | Attach Violation Evidence | Parking Officer | The officer attaches photographs to a violation record at the time of issue to support it if the driver later appeals. | Jad Zeidan |
@@ -61,7 +61,7 @@
 
 | Relationship ID | Base Use Case | Related Use Case | Relationship | Justification |
 | --- | --- | --- | --- | --- |
-| R-01 | Submit Appeal (UC-01) | Verify Violation Record | `<<include>>` | Every appeal must match a valid citation. |
+| R-01 | Submit Appeal (UC-01) | Verify Violation Record (UC-05) | `<<include>>` | Every appeal must match a valid citation. |
 | R-02 | Submit Appeal (UC-01) | Upload Evidence (UC-02) | `<<extend>>` | Evidence is optional, since some appeals won't have documentation to help case. |
 | R-03 | Record Violation (UC-12) | Look Up Vehicle by Plate (UC-11) | `<<include>>` | In order for a violation to be issued or checked for, the Parking Officer must check the plate by running it through the system every time. |
 | R-04 | Manage Permit Application (UC-07) | Review Eligibility Result (UC-18) | `<<include>>` | Every permit decision requires the administrator to inspect the recorded eligibility result. UC-07 points to UC-18. |

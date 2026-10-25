@@ -1,0 +1,340 @@
+@startuml
+title ParkAppeal - Class Diagram (Consolidated)
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundCorner 16
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam classAttributeIconSize 0
+skinparam ClassBackgroundColor #B6B5EF
+skinparam ClassBorderColor #111111
+skinparam ClassBorderThickness 1.6
+skinparam ClassFontColor #111111
+skinparam ClassFontSize 13
+skinparam StereotypeFontColor #111111
+skinparam ArrowColor #111111
+skinparam ArrowThickness 1.3
+skinparam NoteBackgroundColor #FFFFFF
+skinparam NoteBorderColor #111111
+skinparam NoteFontSize 11
+skinparam TitleFontColor #23395B
+skinparam TitleFontSize 22
+skinparam TitleFontStyle plain
+skinparam LegendBackgroundColor #FFFFFF
+skinparam LegendBorderColor #111111
+skinparam PackageBackgroundColor #FAFAFA
+skinparam PackageBorderColor #555555
+skinparam PackageFontSize 14
+skinparam PackageFontStyle plain
+skinparam nodesep 35
+skinparam ranksep 50
+hide empty members
+hide circle
+
+abstract class User <<D1>> #ED9EED {
+  - userId : String
+  - name : String
+  - email : String
+  - passwordHash : String
+  + authenticate(password : String) : boolean
+}
+class PermitHolder <<D1>> #ED9EED {
+  + applyForPermit(vehicleId : String,
+  {method}    typeId : String,
+  {method}    documents : List<File>) : PermitApplication
+  + submitAppeal(violationId : String,
+  {method}    reason : String,
+  {method}    files : List<AppealEvidence>) : Appeal
+  + renewPermit(permitId : String) : Permit
+  + viewAppealStatus(appealId : String) : AppealStatus
+}
+class AppealsOfficer <<D1>> #ED9EED {
+  - employeeId : String
+  + reviewAppeal(appealId : String) : Appeal
+  + recordDecision(appealId : String,
+  {method}    outcome : DecisionOutcome,
+  {method}    justification : String) : Decision
+}
+class ParkingOfficer <<D1>> #ED9EED {
+  - badgeNumber : String
+  - assignedZone : String
+  + lookUpPlate(plate : String) : Vehicle
+  + issueViolation(plate : String,
+  {method}    type : ViolationType,
+  {method}    location : String) : Violation
+}
+class Administrator <<D1>> #ED9EED {
+  - adminId : String
+  + decideApplication(applicationId : String,
+  {method}    approve : boolean) : void
+  + configureEligibility(typeId : String,
+  {method}    criteria : String) : void
+  + setQuota(typeId : String,
+  {method}    quota : int) : void
+  + linkToVehicle(violationId : String,
+  {method}    vehicleId : String) : void
+  + voidViolation(violationId : String,
+  {method}    reason : String) : VoidRecord
+}
+class Vehicle <<D1>> {
+  - vehicleId : String
+  - licensePlate : String
+  + getActivePermit() : Permit
+}
+
+class PermitApplication <<D2>> {
+  - applicationId : String
+  - submittedAt : Date
+  - documents : List<File>
+  - status : ApplicationStatus
+  - eligibilityResult : boolean
+  - unmetCriteria : List<String>
+  + setStatus(newStatus : ApplicationStatus) : void
+}
+class PermitType <<D2>> {
+  - typeId : String
+  - name : String
+  - eligibilityCriteria : String
+  - quota : int
+  - issuedCount : int
+  + hasQuotaRemaining() : boolean
+}
+class Permit <<D2>> {
+  - permitId : String
+  - permitNumber : String
+  - startDate : Date
+  - expiryDate : Date
+  - status : PermitStatus
+  + isValid() : boolean
+  + extendExpiry(newExpiry : Date) : void
+}
+class PermitService <<Process 1.0>> {
+  + submitApplication(holderId : String,
+  {method}    vehicleId : String,
+  {method}    typeId : String,
+  {method}    documents : List<File>) : PermitApplication
+  + checkEligibility(application : PermitApplication) : boolean
+  + issuePermit(applicationId : String) : Permit
+  + renewPermit(permitId : String) : Permit
+  + listPending() : List<PermitApplication>
+  + listByStatus(status : PermitStatus) : List<Permit>
+}
+enum ApplicationStatus #FFFFFF {
+  PENDING
+  APPROVED
+  REJECTED
+}
+enum PermitStatus #FFFFFF {
+  ACTIVE
+  EXPIRED
+}
+
+class Violation <<D3>> {
+  - violationId : String
+  - licensePlate : String
+  - violationType : ViolationType
+  - location : String
+  - issuedAt : Date
+  - fineAmount : double
+  - isVoided : boolean
+  + getIssuedAt() : Date
+  + markVoided(reason : String) : void
+  + isUnmatched() : boolean
+}
+class ViolationEvidence <<D3>> {
+  + isValid() : boolean
+}
+class VoidRecord <<D3>> {
+  - voidId : String
+  - reason : String
+  - voidedAt : Date
+  + isReasonValid() : boolean
+}
+class ViolationService <<Process 2.0>> {
+  - {static} MAX_PHOTOS : int = 5
+  + recordViolation(officerId : String,
+  {method}    plate : String,
+  {method}    type : ViolationType,
+  {method}    location : String) : Violation
+  + attachEvidence(violationId : String,
+  {method}    photo : ViolationEvidence) : void
+  + listUnmatched() : List<Violation>
+  + voidViolation(violationId : String,
+  {method}    actorId : String,
+  {method}    reason : String) : VoidRecord
+  + canRecord(user : User) : boolean
+}
+enum ViolationType #FFFFFF {
+  EXPIRED_PERMIT
+  NO_VALID_PERMIT
+  RESERVED_BAY
+  OBSTRUCTING_ACCESS
+  OUTSIDE_MARKED_BAY
+}
+
+class Appeal <<D4>> {
+  - appealId : String
+  - reason : String
+  - submittedAt : Date
+  - status : AppealStatus
+  + addEvidence(evidence : AppealEvidence) : void
+  + setDecision(decision : Decision) : void
+  + getStatus() : AppealStatus
+}
+class AppealEvidence <<D4>> {
+  + isValid() : boolean
+}
+class Decision <<D4>> {
+  - decisionId : String
+  - outcome : DecisionOutcome
+  - justification : String
+  - adjustedFine : double
+  - decidedAt : Date
+  + isJustificationValid() : boolean
+}
+class AppealService <<Process 3.0>> {
+  - {static} APPEAL_WINDOW_DAYS : int = 14
+  - {static} MAX_ATTACHMENTS : int = 3
+  + submitAppeal(holderId : String,
+  {method}    violationId : String,
+  {method}    reason : String,
+  {method}    files : List<AppealEvidence>) : Appeal
+  + isWithinWindow(violation : Violation) : boolean
+  + recordDecision(appealId : String,
+  {method}    officerId : String,
+  {method}    outcome : DecisionOutcome,
+  {method}    justification : String) : Decision
+  + getAppealsByHolder(holderId : String) : List<Appeal>
+}
+enum AppealStatus #FFFFFF {
+  SUBMITTED
+  UNDER_REVIEW
+  DECIDED
+}
+enum DecisionOutcome #FFFFFF {
+  APPROVED
+  REDUCED
+  REJECTED
+}
+
+abstract class Attachment {
+  - fileId : String
+  - fileName : String
+  - fileType : String
+  - fileSizeBytes : long
+  - uploadedAt : Date
+  + {abstract} isValid() : boolean
+}
+class NotificationService <<Process 5.0>> {
+  + sendSubmissionConfirmation(appeal : Appeal) : void
+  + notifyAppealStatusChange(appeal : Appeal) : void
+  + notifyViolationIssued(violation : Violation) : void
+  + notifyPermitStatusChange(application : PermitApplication) : void
+}
+class ReportService <<Process 4.0>> {
+  + searchPermits(filter : SearchFilter) : List<Permit>
+  + searchViolations(filter : SearchFilter) : List<Violation>
+  + searchAppeals(filter : SearchFilter) : List<Appeal>
+  + generateReport(reportType : String,
+  {method}    startDate : Date,
+  {method}    endDate : Date) : String
+}
+
+abstract class Page <<UI>> {
+  - title : String
+  + {abstract} render() : void
+}
+class LoginPage <<UI>> {
+  - username : String
+  - errorMessage : String
+  + login() : boolean
+}
+class Dashboard <<UI>> {
+  - recentAppeals : List<Appeal>
+  - recentViolations : List<Violation>
+  + loadUserData() : void
+}
+class AppealForm <<UI>> {
+  - violationId : String
+  - reason : String
+  - evidenceFiles : List<File>
+  + validateForm() : boolean
+  + submitAppeal() : boolean
+}
+class SearchFilter <<UI>> {
+  - status : String
+  - startDate : Date
+  - endDate : Date
+  - keyword : String
+  + applyFilter() : List<Appeal>
+}
+
+User <|-down- AppealsOfficer
+User <|-down- PermitHolder
+User <|-down- ParkingOfficer
+User <|-down- Administrator
+Attachment <|-down- AppealEvidence
+Attachment <|-down- ViolationEvidence
+Page <|-down- LoginPage
+Page <|-down- Dashboard
+Page <|-down- AppealForm
+
+AppealsOfficer "1" -down- "0..*" Decision : <back:#C5C5C5> records > </back>
+AppealsOfficer "0..1" -down- "0..*" Appeal : <back:#C5C5C5> reviews > </back>
+PermitHolder "1" -down- "0..*" Appeal : <back:#C5C5C5> files > </back>
+Appeal "1" *-left- "0..1" Decision : <back:#C5C5C5> resolved by > </back>
+Appeal "1" *-down- "0..3" AppealEvidence : <back:#C5C5C5> supported by > </back>
+Violation "1" -left- "0..1" Appeal : <back:#C5C5C5> is disputed by > </back>
+
+ParkingOfficer "1" -down- "0..*" Violation : <back:#C5C5C5> issues > </back>
+Violation "1" -right- "0..1" VoidRecord : <back:#C5C5C5> voided by > </back>
+User "1" -down- "0..*" VoidRecord : <back:#C5C5C5> records > </back>
+Violation "1" *-down- "0..5" ViolationEvidence : <back:#C5C5C5> evidenced by > </back>
+Violation "0..*" -right- "0..1" Vehicle : <back:#C5C5C5> recorded against > </back>
+
+PermitHolder "1" -down- "0..*" Vehicle : <back:#C5C5C5> owns > </back>
+PermitHolder "1" -down- "0..*" PermitApplication : <back:#C5C5C5> submits > </back>
+Administrator "0..1" -down- "0..*" PermitApplication : <back:#C5C5C5> decides > </back>
+PermitApplication "0..*" -left- "1" Vehicle : <back:#C5C5C5> for > </back>
+PermitApplication "1" -down- "0..1" Permit : <back:#C5C5C5> results in > </back>
+PermitApplication "0..*" -down- "1" PermitType : <back:#C5C5C5> requests > </back>
+Vehicle "1" -down- "0..*" Permit : <back:#C5C5C5> holds > </back>
+Permit "0..*" -right- "1" PermitType : <back:#C5C5C5> of type > </back>
+
+AppealService .right.> ViolationService : <back:#C5C5C5> void on approval </back>
+AppealService .down.> NotificationService : <back:#C5C5C5> Appeal Status Change </back>
+ViolationService .down.> NotificationService : <back:#C5C5C5> Violation Issued Event </back>
+PermitService .down.> NotificationService : <back:#C5C5C5> Permit Status Change </back>
+ReportService .down.> SearchFilter : <back:#C5C5C5> uses </back>
+AppealForm .up.> AppealService : <back:#C5C5C5> submits via </back>
+LoginPage .up.> User : <back:#C5C5C5> authenticates </back>
+
+AppealsOfficer -[hidden]right- PermitHolder
+PermitHolder -[hidden]right- ParkingOfficer
+ParkingOfficer -[hidden]right- Administrator
+Appeal -[hidden]right- Attachment
+Attachment -[hidden]right- Violation
+VoidRecord -[hidden]right- Vehicle
+Decision -[hidden]down- DecisionOutcome
+DecisionOutcome -[hidden]right- AppealStatus
+AppealStatus -[hidden]right- AppealEvidence
+ViolationEvidence -[hidden]right- ViolationType
+ViolationType -[hidden]right- Permit
+AppealEvidence -[hidden]down- AppealService
+ViolationEvidence -[hidden]down- ViolationService
+PermitType -[hidden]down- PermitService
+PermitService -[hidden]right- ApplicationStatus
+ApplicationStatus -[hidden]right- PermitStatus
+ViolationService -[hidden]down- ReportService
+NotificationService -[hidden]right- ReportService
+ReportService -[hidden]right- Page
+
+legend bottom left
+  <back:#ED9EED>   </back> Actor (DFD external entity)
+  <back:#B6B5EF>   </back> System class
+  <back:#FFFFFF>   </back> Enum
+  D1 User and Vehicle Registry, D2 Permit Records,
+  D3 Violation Records, D4 Appeal Records
+end legend
+@enduml
