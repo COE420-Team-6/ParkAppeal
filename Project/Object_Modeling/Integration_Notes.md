@@ -38,4 +38,4 @@
 
 All diagrams share one style: pink for actors (DFD external entities), lavender for the classes a model owns, white for reference classes and enums. Render the `.puml` files with PlantUML.
 
-_AI tool declaration: Claude (Anthropic) was used to help draft the class inventory wording, the consolidation record and the consistency check, and to generate the PlantUML source for the diagrams. The team reviewed and edited all output and is responsible for the final content._
+_AI tool declaration: Claude (Anthropic) was used to generate the PlantUML source for the diagrams. The team reviewed and edited all output and is responsible for the final content._
