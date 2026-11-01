@@ -1,0 +1,63 @@
+@startuml
+title ParkAppeal - Sequence Diagram (UC-12 Record Violation)
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam TitleFontColor #23395B
+skinparam TitleFontSize 22
+skinparam TitleFontStyle plain
+skinparam ArrowColor #111111
+skinparam ArrowThickness 1.2
+skinparam SequenceMessageAlign left
+skinparam ParticipantBackgroundColor #B6B5EF
+skinparam ParticipantBorderColor #111111
+skinparam ParticipantBorderThickness 1.4
+skinparam ParticipantFontSize 13
+skinparam ActorBackgroundColor #ED9EED
+skinparam ActorBorderColor #111111
+skinparam ActorFontSize 13
+skinparam SequenceLifeLineBorderColor #555555
+skinparam SequenceLifeLineBackgroundColor #FFFFFF
+skinparam SequenceGroupBorderColor #555555
+skinparam SequenceGroupBackgroundColor #C5C5C5
+skinparam SequenceGroupHeaderFontStyle plain
+skinparam SequenceDividerBackgroundColor #C5C5C5
+skinparam SequenceDividerBorderColor #555555
+skinparam SequenceDividerFontStyle plain
+skinparam ParticipantPadding 14
+hide footbox
+autonumber
+
+actor "Parking Officer" as PO
+participant ":ViolationService" as VS
+participant ":Vehicle" as VH
+participant ":Permit" as PM
+participant ":Violation" as V
+participant ":NotificationService" as NS
+
+== UC-11 Look Up Vehicle by Plate (include) ==
+PO -> VS ++ : lookUpVehicle(plate)
+VS -> VH ++ : [plate registered] getActivePermit()
+VH -> PM ++ : ~*[for each permit of the vehicle] isValid()
+PM --> VH -- : valid
+VH --> VS -- : activePermit
+VS --> PO -- : vehicle and permit status
+
+== UC-12 Record Violation ==
+PO -> VS ++ : recordViolation(officerId, plate, type, location)
+VS -> VS ++ : canRecord(officer)
+deactivate VS
+alt account is not a Parking Officer or Administrator
+  VS --> PO : rejected (attempt logged)
+else authorised
+  create V
+  VS -> V : create(plate, type, location, vehicle)
+  VS -> V ++ : isUnmatched()
+  V --> VS -- : unmatched
+  VS -> NS ++ : [not unmatched] notifyViolationIssued(violation)
+  deactivate NS
+  VS --> PO : violation (issuedAt stamped)
+end
+deactivate VS
+@enduml

@@ -1,0 +1,77 @@
+@startuml
+title ParkAppeal - Sequence Diagram (UC-01 Submit Appeal)
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam TitleFontColor #23395B
+skinparam TitleFontSize 22
+skinparam TitleFontStyle plain
+skinparam ArrowColor #111111
+skinparam ArrowThickness 1.2
+skinparam SequenceMessageAlign left
+skinparam ParticipantBackgroundColor #B6B5EF
+skinparam ParticipantBorderColor #111111
+skinparam ParticipantBorderThickness 1.4
+skinparam ParticipantFontSize 13
+skinparam ActorBackgroundColor #ED9EED
+skinparam ActorBorderColor #111111
+skinparam ActorFontSize 13
+skinparam SequenceLifeLineBorderColor #555555
+skinparam SequenceLifeLineBackgroundColor #FFFFFF
+skinparam SequenceGroupBorderColor #555555
+skinparam SequenceGroupBackgroundColor #C5C5C5
+skinparam SequenceGroupHeaderFontStyle plain
+skinparam SequenceDividerBackgroundColor #C5C5C5
+skinparam SequenceDividerBorderColor #555555
+skinparam SequenceDividerFontStyle plain
+skinparam ParticipantPadding 14
+hide footbox
+autonumber
+
+actor "Permit Holder" as PH
+participant ":AppealForm" as AF
+participant ":AppealService" as AS
+participant ":ViolationService" as VS
+participant ":Violation" as V
+participant ":Appeal" as AP
+participant ":AppealEvidence" as AE
+participant ":NotificationService" as NS
+
+PH -> AF ++ : submitAppeal()
+AF -> AF ++ : validateForm()
+deactivate AF
+AF -> AS ++ : [form valid] submitAppeal(holderId, violationId, reason, files)
+
+== UC-05 Verify Violation Record (include) ==
+AS -> AS ++ : verifyViolationRecord(violationId)
+AS -> VS ++ : getViolation(violationId)
+VS --> AS -- : violation
+deactivate AS
+AS -> AS ++ : [violation found] isWithinWindow(violation)
+AS -> V ++ : getIssuedAt()
+V --> AS -- : issuedAt
+deactivate AS
+
+alt no matching violation, or violation voided
+  AS --> AF : refused("No matching violation")
+  AF --> PH : show error
+else more than 14 days after issuedAt
+  AS --> AF : refused("Appeal window has passed")
+  AF --> PH : show error
+else within the 14-day window
+  create AP
+  AS -> AP : create(holderId, violation, reason)
+  == UC-02 Upload Evidence (extend) ==
+  AS -> AE ++ : ~*[for each file, at most 3] isValid()
+  AE --> AS -- : valid
+  AS -> AP ++ : [valid] addEvidence(evidence)
+  deactivate AP
+  AS -> NS ++ : sendSubmissionConfirmation(appeal)
+  deactivate NS
+  AS --> AF : appeal (status SUBMITTED)
+  AF --> PH : confirmation
+end
+deactivate AS
+deactivate AF
+@enduml

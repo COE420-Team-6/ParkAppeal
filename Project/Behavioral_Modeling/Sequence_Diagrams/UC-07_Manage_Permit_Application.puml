@@ -1,0 +1,74 @@
+@startuml
+title ParkAppeal - Sequence Diagram (UC-07 Manage Permit Application)
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam TitleFontColor #23395B
+skinparam TitleFontSize 22
+skinparam TitleFontStyle plain
+skinparam ArrowColor #111111
+skinparam ArrowThickness 1.2
+skinparam SequenceMessageAlign left
+skinparam ParticipantBackgroundColor #B6B5EF
+skinparam ParticipantBorderColor #111111
+skinparam ParticipantBorderThickness 1.4
+skinparam ParticipantFontSize 13
+skinparam ActorBackgroundColor #ED9EED
+skinparam ActorBorderColor #111111
+skinparam ActorFontSize 13
+skinparam SequenceLifeLineBorderColor #555555
+skinparam SequenceLifeLineBackgroundColor #FFFFFF
+skinparam SequenceGroupBorderColor #555555
+skinparam SequenceGroupBackgroundColor #C5C5C5
+skinparam SequenceGroupHeaderFontStyle plain
+skinparam SequenceDividerBackgroundColor #C5C5C5
+skinparam SequenceDividerBorderColor #555555
+skinparam SequenceDividerFontStyle plain
+skinparam ParticipantPadding 14
+hide footbox
+autonumber
+
+actor "Administrator" as AD
+participant ":PermitService" as PS
+participant ":PermitApplication" as PA
+participant ":PermitType" as PT
+participant ":Permit" as PM
+participant ":NotificationService" as NS
+
+AD -> PS ++ : listPending()
+PS --> AD -- : pendingApplications
+
+== UC-18 Review Eligibility Result (include) ==
+AD -> PS ++ : reviewEligibility(applicationId)
+PS -> PA ++ : getUnmetCriteria()
+PA --> PS -- : unmetCriteria
+PS --> AD -- : eligibilityResult, unmetCriteria
+
+== Decision ==
+AD -> PS ++ : decideApplication(applicationId, approve)
+alt approve = false
+  PS -> PA ++ : setStatus(REJECTED)
+  deactivate PA
+  PS -> NS ++ : notifyPermitStatusChange(application)
+  deactivate NS
+  PS --> AD : application rejected
+else approve = true and application eligible
+  PS -> PT ++ : hasQuotaRemaining()
+  PT --> PS -- : quotaRemaining
+  PS --> AD : [no quota remaining] issuance blocked ("Quota reached")
+  == UC-19 Issue Approved Permit (extend) ==
+  PS -> PS ++ : [quotaRemaining] issuePermit(applicationId)
+  create PM
+  PS -> PM : create(permitNumber, startDate, expiryDate)
+  PS -> PT ++ : incrementIssued()
+  deactivate PT
+  PS -> PA ++ : setStatus(APPROVED)
+  deactivate PA
+  deactivate PS
+  PS -> NS ++ : [quotaRemaining] notifyPermitStatusChange(application)
+  deactivate NS
+  PS --> AD : [quotaRemaining] permit (status ACTIVE)
+end
+deactivate PS
+@enduml
