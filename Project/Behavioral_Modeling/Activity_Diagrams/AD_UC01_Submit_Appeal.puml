@@ -1,0 +1,80 @@
+@startuml
+title ParkAppeal - Activity Diagram (UC-01 Submit Appeal)
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam TitleFontColor #23395B
+skinparam TitleFontSize 22
+skinparam TitleFontStyle plain
+skinparam ArrowColor #111111
+skinparam ArrowThickness 1.2
+skinparam ActivityBackgroundColor #B6B5EF
+skinparam ActivityBorderColor #111111
+skinparam ActivityBorderThickness 1.4
+skinparam ActivityFontSize 12
+skinparam ActivityDiamondBackgroundColor #FFFFFF
+skinparam ActivityDiamondBorderColor #111111
+skinparam ActivityBarColor #111111
+skinparam ActivityStartColor #111111
+skinparam ActivityEndColor #111111
+skinparam SwimlaneBorderColor #555555
+skinparam SwimlaneBorderThickness 1.2
+skinparam SwimlaneTitleFontSize 14
+skinparam SwimlaneWidth same
+|Permit Holder|
+|Appeal Form|
+|Appeal Service|
+|Violation Service|
+|Notification Service|
+|Permit Holder|
+
+start
+#ED9EED:Open violation and select Appeal;
+repeat
+  #ED9EED:Enter reason and attach files (0 to 3);
+  |Appeal Form|
+  :Validate form;
+  backward:Highlight missing fields;
+repeat while () is ([invalid]) not ([valid])
+:Submit appeal;
+|Appeal Service|
+:Verify violation record;
+|Violation Service|
+:Retrieve violation record;
+|Appeal Service|
+if () then ([found and not voided])
+  :Check 14-day window from issue date;
+  if () then ([within 14 days])
+    :Create appeal (status SUBMITTED);
+    while () is ([more files])
+      :Validate file type and size;
+      if () then ([valid])
+        :Add evidence to appeal;
+      else ([invalid])
+      endif
+    endwhile ([no more files])
+    fork
+      |Notification Service|
+      :Send confirmation email;
+    fork again
+      |Appeal Form|
+      :Show confirmation;
+    end fork
+    |Permit Holder|
+    #ED9EED:View confirmation;
+    stop
+  else ([more than 14 days])
+    |Appeal Service|
+    :Refuse appeal (window has passed);
+  endif
+else ([not found or voided])
+  |Appeal Service|
+  :Refuse appeal (no matching violation);
+endif
+|Appeal Form|
+:Show error message;
+|Permit Holder|
+#ED9EED:View error message;
+stop
+@enduml

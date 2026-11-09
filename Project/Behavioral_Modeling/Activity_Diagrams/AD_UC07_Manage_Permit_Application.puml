@@ -1,0 +1,67 @@
+@startuml
+title ParkAppeal - Activity Diagram (UC-07 Manage Permit Application)
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam TitleFontColor #23395B
+skinparam TitleFontSize 22
+skinparam TitleFontStyle plain
+skinparam ArrowColor #111111
+skinparam ArrowThickness 1.2
+skinparam ActivityBackgroundColor #B6B5EF
+skinparam ActivityBorderColor #111111
+skinparam ActivityBorderThickness 1.4
+skinparam ActivityFontSize 12
+skinparam ActivityDiamondBackgroundColor #FFFFFF
+skinparam ActivityDiamondBorderColor #111111
+skinparam ActivityBarColor #111111
+skinparam ActivityStartColor #111111
+skinparam ActivityEndColor #111111
+skinparam SwimlaneBorderColor #555555
+skinparam SwimlaneBorderThickness 1.2
+skinparam SwimlaneTitleFontSize 14
+skinparam SwimlaneWidth same
+|Administrator|
+|Permit Service|
+|Notification Service|
+|Administrator|
+
+start
+#ED9EED:Open pending applications;
+|Permit Service|
+:List pending applications;
+|Administrator|
+#ED9EED:Select application;
+|Permit Service|
+:Retrieve eligibility result and unmet criteria;
+|Administrator|
+#ED9EED:Review eligibility result;
+#ED9EED:Approve or reject application;
+|Permit Service|
+if () then ([approved])
+  :Check eligibility and permit type quota;
+  if () then ([eligible and quota remaining])
+    :Create permit (unique number, start and expiry dates);
+    :Increment issued count;
+    :Set application status APPROVED;
+  else ([not eligible or quota reached])
+    :Block issuance and return reason;
+    |Administrator|
+    #ED9EED:View reason;
+    stop
+  endif
+else ([rejected])
+  |Permit Service|
+  :Set application status REJECTED;
+endif
+|Permit Service|
+fork
+  |Notification Service|
+  :Notify permit holder of status change;
+fork again
+  |Administrator|
+  #ED9EED:View decision result;
+end fork
+stop
+@enduml

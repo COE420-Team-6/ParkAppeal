@@ -91,6 +91,7 @@ class PermitApplication <<D2>> {
   - eligibilityResult : boolean
   - unmetCriteria : List<String>
   + setStatus(newStatus : ApplicationStatus) : void
+  + getUnmetCriteria() : List<String>
 }
 class PermitType <<D2>> {
   - typeId : String
@@ -99,6 +100,7 @@ class PermitType <<D2>> {
   - quota : int
   - issuedCount : int
   + hasQuotaRemaining() : boolean
+  + incrementIssued() : void
 }
 class Permit <<D2>> {
   - permitId : String
@@ -118,6 +120,9 @@ class PermitService <<Process 1.0>> {
   + issuePermit(applicationId : String) : Permit
   + renewPermit(permitId : String) : Permit
   + listPending() : List<PermitApplication>
+  + reviewEligibility(applicationId : String) : PermitApplication
+  + decideApplication(applicationId : String,
+  {method}    approve : boolean) : void
   + listByStatus(status : PermitStatus) : List<Permit>
 }
 enum ApplicationStatus #FFFFFF {
@@ -153,6 +158,8 @@ class VoidRecord <<D3>> {
 }
 class ViolationService <<Process 2.0>> {
   - {static} MAX_PHOTOS : int = 5
+  + lookUpVehicle(plate : String) : Vehicle
+  + getViolation(violationId : String) : Violation
   + recordViolation(officerId : String,
   {method}    plate : String,
   {method}    type : ViolationType,
@@ -200,6 +207,7 @@ class AppealService <<Process 3.0>> {
   {method}    violationId : String,
   {method}    reason : String,
   {method}    files : List<AppealEvidence>) : Appeal
+  + verifyViolationRecord(violationId : String) : Violation
   + isWithinWindow(violation : Violation) : boolean
   + recordDecision(appealId : String,
   {method}    officerId : String,
@@ -302,7 +310,7 @@ PermitApplication "0..*" -down- "1" PermitType : <back:#C5C5C5> requests > </bac
 Vehicle "1" -down- "0..*" Permit : <back:#C5C5C5> holds > </back>
 Permit "0..*" -right- "1" PermitType : <back:#C5C5C5> of type > </back>
 
-AppealService .right.> ViolationService : <back:#C5C5C5> void on approval </back>
+AppealService .right.> ViolationService : <back:#C5C5C5> verify, void on approval </back>
 AppealService .down.> NotificationService : <back:#C5C5C5> Appeal Status Change </back>
 ViolationService .down.> NotificationService : <back:#C5C5C5> Violation Issued Event </back>
 PermitService .down.> NotificationService : <back:#C5C5C5> Permit Status Change </back>

@@ -53,12 +53,12 @@ alt approve = false
   PS -> NS ++ : notifyPermitStatusChange(application)
   deactivate NS
   PS --> AD : application rejected
-else approve = true and application eligible
+else approve = true
   PS -> PT ++ : hasQuotaRemaining()
   PT --> PS -- : quotaRemaining
-  PS --> AD : [no quota remaining] issuance blocked ("Quota reached")
+  PS --> AD : [not eligible or no quota remaining] issuance blocked (reason)
   == UC-19 Issue Approved Permit (extend) ==
-  PS -> PS ++ : [quotaRemaining] issuePermit(applicationId)
+  PS -> PS ++ : [eligible and quotaRemaining] issuePermit(applicationId)
   create PM
   PS -> PM : create(permitNumber, startDate, expiryDate)
   PS -> PT ++ : incrementIssued()
@@ -66,9 +66,9 @@ else approve = true and application eligible
   PS -> PA ++ : setStatus(APPROVED)
   deactivate PA
   deactivate PS
-  PS -> NS ++ : [quotaRemaining] notifyPermitStatusChange(application)
+  PS -> NS ++ : [eligible and quotaRemaining] notifyPermitStatusChange(application)
   deactivate NS
-  PS --> AD : [quotaRemaining] permit (status ACTIVE)
+  PS --> AD : [eligible and quotaRemaining] permit (status ACTIVE)
 end
 deactivate PS
 @enduml

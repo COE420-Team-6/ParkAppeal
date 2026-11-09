@@ -1,0 +1,65 @@
+@startuml
+title ParkAppeal - Activity Diagram (UC-12 Record Violation)
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam TitleFontColor #23395B
+skinparam TitleFontSize 22
+skinparam TitleFontStyle plain
+skinparam ArrowColor #111111
+skinparam ArrowThickness 1.2
+skinparam ActivityBackgroundColor #B6B5EF
+skinparam ActivityBorderColor #111111
+skinparam ActivityBorderThickness 1.4
+skinparam ActivityFontSize 12
+skinparam ActivityDiamondBackgroundColor #FFFFFF
+skinparam ActivityDiamondBorderColor #111111
+skinparam ActivityBarColor #111111
+skinparam ActivityStartColor #111111
+skinparam ActivityEndColor #111111
+skinparam SwimlaneBorderColor #555555
+skinparam SwimlaneBorderThickness 1.2
+skinparam SwimlaneTitleFontSize 14
+skinparam SwimlaneWidth same
+|Parking Officer|
+|Violation Service|
+|Notification Service|
+|Parking Officer|
+
+start
+#ED9EED:Enter licence plate;
+|Violation Service|
+:Look up vehicle by plate;
+if () then ([plate registered])
+  :Check validity of each linked permit;
+else ([plate not registered])
+endif
+|Parking Officer|
+#ED9EED:Review vehicle and permit status;
+#ED9EED:Select violation type and enter location;
+|Violation Service|
+:Check account role;
+if () then ([authorised])
+  :Create violation with issue timestamp;
+else ([not Parking Officer or Administrator])
+  :Reject and log attempt;
+  |Parking Officer|
+  #ED9EED:View rejection;
+  stop
+endif
+|Violation Service|
+fork
+  if () then ([plate matched to a vehicle])
+    |Notification Service|
+    :Notify permit holder;
+  else ([unmatched plate])
+    |Violation Service|
+    :Add to Administrator unmatched queue;
+  endif
+fork again
+  |Parking Officer|
+  #ED9EED:View recorded violation;
+end fork
+stop
+@enduml
