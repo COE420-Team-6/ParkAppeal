@@ -124,6 +124,10 @@ class PermitService <<Process 1.0>> {
   + decideApplication(applicationId : String,
   {method}    approve : boolean) : void
   + listByStatus(status : PermitStatus) : List<Permit>
+  + configureEligibility(typeId : String,
+  {method}    criteria : String) : void
+  + setQuota(typeId : String,
+  {method}    quota : int) : void
 }
 enum ApplicationStatus #FFFFFF {
   PENDING
@@ -167,6 +171,8 @@ class ViolationService <<Process 2.0>> {
   + attachEvidence(violationId : String,
   {method}    photo : ViolationEvidence) : void
   + listUnmatched() : List<Violation>
+  + linkToVehicle(violationId : String,
+  {method}    vehicleId : String) : void
   + voidViolation(violationId : String,
   {method}    actorId : String,
   {method}    reason : String) : VoidRecord
@@ -214,6 +220,7 @@ class AppealService <<Process 3.0>> {
   {method}    outcome : DecisionOutcome,
   {method}    justification : String) : Decision
   + getAppealsByHolder(holderId : String) : List<Appeal>
+  + reviewAppeal(appealId : String) : Appeal
 }
 enum AppealStatus #FFFFFF {
   SUBMITTED
